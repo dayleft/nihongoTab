@@ -10,11 +10,10 @@
 #    docs.serverless.com
 #
 # Happy Coding!
-
-service: nihongotab
+org: peaky
+app: nihongotabapp
+service: nihongotabservice
 # app and org for use with dashboard.serverless.com
-#app: nihongotab
-#org: peaky
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -59,11 +58,11 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  hellotest2:
-    handler: handler.hellotest2
+  getVocab:
+    handler: handler.getVocab
     events:
       - httpApi:
-          path: /hellotest2
+          path: /getVocab
           method: get
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
