@@ -1,0 +1,26 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>learning vue</title>
+  <script src="https://unpkg.com/vue@next"></script>
+</head>
+<body>
+  <h1>hello vue</h1>
+
+  <div id="app">
+    <p v-show="leftShow">{{ randomizedVocab[currentWord].yomigana }}</p>
+    <p>{{ randomizedVocab[currentWord].kanji }}</p>
+    <p>|</p>  
+    <p v-show="rightShow">{{ randomizedVocab[currentWord].english }}</p>
+    <button @click="clickLeft()">show yomigana</button>
+    <button v-on:click="clickRight()">show translation</button>
+    <div v-show="refreshShow">
+      <button v-on:click="clickRefresh()">refresh</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
