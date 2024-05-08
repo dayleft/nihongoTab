@@ -6,21 +6,7 @@ import { ref } from 'vue'
 
 
 //Global vars
-// const props = defineProps <{
-//   _vocabList: String,
-//   _currentWord: Number,
-//   _setLength: Number,
-
-//   _showYomigana: Boolean,
-//   _showKanji: Boolean,
-//   _showEnglish: Boolean,
-//   _showNextSetButton: Boolean,
-//   _showEndOfVocabList: Boolean,
-
-//   progressBar: Number
-// }>()
-
-const _vocabList = ref("TerraceHouse")
+const _vocabList = ref('TerraceHouse')
 const _currentWord = ref(0)
 const _setLength = ref(10) //should be 10-20
 
@@ -59,7 +45,7 @@ function _getNextWord() {
   _showEnglish.value = false
   _showNextSetButton.value = false
   if (_atEndOfVocabList()) {
-    _currentWord.value = (_currentWord.value+1) - (vocab[_vocabList.value].length % _setLength.value)
+    _currentWord.value = (_currentWord.value+1) - ((vocab as any)[_vocabList.value].length % _setLength.value)
   } else if (_atEndOfSet()) {
     _currentWord.value = (_currentWord.value+1) - _setLength.value //causes bug that last set will refresh and add words if less than set length
   } else {
@@ -72,7 +58,7 @@ function _atEndOfSet() {
 }
 
 function _atEndOfVocabList() {
-  return (_currentWord.value+1) === vocab[_vocabList.value].length
+  return (_currentWord.value+1) === (vocab as any)[_vocabList.value].length
 }
 
 function clickNextSet() {

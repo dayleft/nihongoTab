@@ -5,11 +5,11 @@ import vocab from './../assets/japanese-vocab.json'
 const props = defineProps<{
   vocabList: String,
   currentWord: Number,
-  showEnglish: false
+  showEnglish: Boolean
   //vocabPack - which set of 20 words are you learning?
 }>()
 
-const english = ref(vocab[props.vocabList][props.currentWord].english)
+const english = ref(((vocab as any)[props.vocabList as any][props.currentWord as any]).english)
 </script>
 
 <template>

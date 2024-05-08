@@ -1,0 +1,16 @@
+{
+    "manifest_version": 3,
+    "name": "nihongoTab",
+    "version": "0.5",
+    "description": "Practice Japanese vocab every time you open a new tab!",
+    "permissions": [
+        "storage",
+        "activeTab"
+    ],
+    "chrome_url_overrides" : {
+        "newtab": "newTab.html"
+    },
+    "background": {
+        "service_worker": "background.js"
+     }
+  }

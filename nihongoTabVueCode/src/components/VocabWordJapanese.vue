@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import vocab from './../assets/japanese-vocab.json'
 
 const props = defineProps<{
-  vocabList: String,
+  vocabList: string,
   currentWord: Number,
   showYomigana: Boolean,
   showKanji: Boolean
@@ -11,8 +11,8 @@ const props = defineProps<{
 }>()
 
 // let vocabWord = vocab[props.vocabList][props.currentWord]
-const kanji = ref(vocab[props.vocabList][props.currentWord].kanji)
-const yomigana = ref(vocab[props.vocabList][props.currentWord].hiragana)
+const kanji = ref((vocab as any)[props.vocabList][props.currentWord as any].kanji)
+const yomigana = ref((vocab as any)[props.vocabList][props.currentWord as any].hiragana)
 </script>
 
 <template>
