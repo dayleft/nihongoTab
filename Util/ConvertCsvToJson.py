@@ -27,7 +27,7 @@ def convertCsvToJson(filename):
                 hiraganaWord = None
             kanjiWord = str(row[kanjiColumn])
             if kanjiWord == "":
-                kanjiWord = None
+                kanjiWord = hiraganaWord
             vocabSetName = str(row[vocabSetColumn])
             if vocabSetName == "":
                 vocabSetName = "No set"

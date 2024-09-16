@@ -1,95 +1,144 @@
 <script setup lang="ts">
 import VocabWordJapanese from './components/VocabWordJapanese.vue'
 import VocabWordEnglish from './components/VocabWordEnglish.vue'
+import VocabListSelector from './components/VocabListSelector.vue';
 import vocab from './assets/japanese-vocab.json'
 import { ref } from 'vue'
 
+//App State
+const appState = ref({
+  currentVocabList: 'N5',
+  currentWord: 0,
+  setLength: 10,
+  vocab: vocab,
 
-//Global vars
-const _vocabList = ref('TerraceHouse')
-const _currentWord = ref(0)
-const _setLength = ref(10) //should be 10-20
+  showYomigana: false,
+  showKanji: true,
+  showEnglish: false,
 
-const _showYomigana = ref(false)
-const _showKanji = ref(true)
-const _showEnglish = ref(false)
+  showNextSetButton: false,
+  showEndOfVocabList: false,
 
-const _showNextSetButton = ref(false)
-const _showEndOfVocabList = ref(false)
+  progressBar: 0
+})
 
-const progressBar = ref(0)
+//Vocab list data
+// const vocabListLibrary = ref([
+//   {
+//     vocabListName: "N5",
+//     vocabListIndex: "N5"
+//   },
+//   {
+//     vocabListName: "N4",
+//     vocabListIndex: "N4"
+//   },
+//   {
+//     vocabListName: "N3",
+//     vocabListIndex: "N3"
+//   },
+//   {
+//     vocabListName: "N2",
+//     vocabListIndex: "N2"
+//   },
+//   {
+//     vocabListName: "N1",
+//     vocabListIndex: "N1"
+//   },
+//   {
+//     vocabListName: "Other",
+//     vocabListIndex: "No set"
+//   }
+// ])
 
 //On click funtions
 function clickJapanese() {
-  if (_showYomigana.value === false) {
-    _showYomigana.value = true
-  } //else if (_showYomigana.value === true && _showEnglish.value === true) {
-  //   _getNextWord()
-  // }
+  if (appState.value.showYomigana === false) {
+    appState.value.showYomigana = true
+  }
 }
-
 function clickEnglish() {
-  if (_showEnglish.value === false) {
-    _showEnglish.value = true
+  if (appState.value.showEnglish === false) {
+    appState.value.showEnglish = true
     //increment progress bar
     if (_atEndOfSet() || _atEndOfVocabList()) {
-      _showNextSetButton.value = true
+      appState.value.showNextSetButton = true
     }
   } else {
     _getNextWord()
   }
 }
-
-function _getNextWord() {
-  _showYomigana.value = false
-  _showEnglish.value = false
-  _showNextSetButton.value = false
-  if (_atEndOfVocabList()) {
-    _currentWord.value = (_currentWord.value+1) - ((vocab as any)[_vocabList.value].length % _setLength.value)
-  } else if (_atEndOfSet()) {
-    _currentWord.value = (_currentWord.value+1) - _setLength.value //causes bug that last set will refresh and add words if less than set length
-  } else {
-    _currentWord.value = _currentWord.value+1
-  }
-}
-
-function _atEndOfSet() {
-  return ((_currentWord.value+1) % _setLength.value) === 0 //|| (_currentWord+1) === vocab[_vocabList].length
-}
-
-function _atEndOfVocabList() {
-  return (_currentWord.value+1) === (vocab as any)[_vocabList.value].length
-}
-
 function clickNextSet() {
-  _showNextSetButton.value = false
-  _showYomigana.value = false
-  _showEnglish.value = false
+  _resetFlashcard()
   if (_atEndOfVocabList()) {
-    _showYomigana.value = false
-    _showKanji.value = false
-    _showEnglish.value = false
-    _showEndOfVocabList.value = true
+    _hideFlashcard()
+    appState.value.showEndOfVocabList = true
   } else {
-    _currentWord.value = _currentWord.value+1
+    appState.value.currentWord = appState.value.currentWord+1
   }
+}
+function changeVocabList(vocabList:string) {
+  appState.value.currentVocabList = vocabList
+  appState.value.currentWord = 0
+  //currentVocabList.value = vocabList
+}
+function _getNextWord() {
+  _resetFlashcard()
+  if (_atEndOfVocabList()) { //Go back to the begining of the set when the set length is <setLength
+    appState.value.currentWord = (appState.value.currentWord+1) - ((vocab as any)[appState.value.currentVocabList].length % appState.value.setLength)
+  } else if (_atEndOfSet()) { //Go back to begining of the set
+    appState.value.currentWord = (appState.value.currentWord+1) - appState.value.setLength
+  } else {
+    appState.value.currentWord = appState.value.currentWord+1
+  }
+}
+function _resetFlashcard() {
+  appState.value.showKanji = true
+  appState.value.showYomigana = false
+  appState.value.showEnglish = false
+  appState.value.showNextSetButton = false
+}
+function _hideFlashcard() {
+  appState.value.showYomigana = false
+  appState.value.showKanji = false
+  appState.value.showEnglish = false
+}
+function _atEndOfSet() {
+  return ((appState.value.currentWord+1) % appState.value.setLength) === 0 //|| (appState.value.currentWord+1) === vocab[_vocabList].length
+}
+function _atEndOfVocabList() {
+  return (appState.value.currentWord+1) === (vocab as any)[appState.value.currentVocabList].length
 }
 </script>
 
 <template>
   <header>
-    <div @click="clickJapanese()" class="wrapper">
-      <VocabWordJapanese v-bind:vocabList="_vocabList" v-bind:currentWord="_currentWord" v-bind:showYomigana="_showYomigana" v-bind:showKanji="_showKanji" :key="_currentWord"/>
+      <VocabListSelector 
+        :currentVocabList="appState.currentVocabList"
+        @changeVocabList="changeVocabList"
+      />
+    <div class="wrapper">
+      <VocabWordJapanese 
+        :currentVocabList="appState.currentVocabList" 
+        :currentWord="appState.currentWord"
+        :vocab="appState.vocab"
+        :showYomigana="appState.showYomigana"
+        :showKanji="appState.showKanji" 
+        @clickJapanese="clickJapanese"
+      />
     </div>
   </header>
-    <div @click="clickEnglish()">
-      <VocabWordEnglish :vocabList="_vocabList" :currentWord="_currentWord" :showEnglish="_showEnglish" :key="_currentWord"/>
+      <VocabWordEnglish 
+        :currentVocabList="appState.currentVocabList" 
+        :currentWord="appState.currentWord" 
+        :vocab="appState.vocab"
+        :showEnglish="appState.showEnglish" 
+        @clickEnglish="clickEnglish"
+      />
+    <div>
+      <button class="button" v-show="appState.showNextSetButton" @click="clickNextSet()">Next vocab set</button>
     </div>
     <div>
-      <button class="button" v-show="_showNextSetButton" @click="clickNextSet()">Next vocab set</button>
-    </div>
-    <div>
-      <h1 v-show="_showEndOfVocabList" class="green">Congrats! You completed this vocab list!</h1>
+      <h1 v-show="appState.showEndOfVocabList" class="green">Congrats! You completed this vocab list!</h1>
     </div>
 </template>
 

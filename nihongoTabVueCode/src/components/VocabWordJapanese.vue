@@ -1,26 +1,25 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import vocab from './../assets/japanese-vocab.json'
 
 const props = defineProps<{
-  vocabList: string,
+  currentVocabList: string,
   currentWord: Number,
+  vocab: object,
   showYomigana: Boolean,
   showKanji: Boolean
-  //vocabPack - which set of 20 words are you learning?
 }>()
 
 // let vocabWord = vocab[props.vocabList][props.currentWord]
-const kanji = ref((vocab as any)[props.vocabList][props.currentWord as any].kanji)
-const yomigana = ref((vocab as any)[props.vocabList][props.currentWord as any].hiragana)
+//const kanji = ref((vocab as any)[props.currentVocabList][props.currentWord as any].kanji)
+//const yomigana = ref((vocab as any)[props.currentVocabList][props.currentWord as any].hiragana)
 </script>
 
 <template>
-  <div class="word">
-    <h3 :class="{ invisible: !showYomigana}">{{ yomigana }}</h3>
-
+  <div class="word" @click="$emit('clickJapanese')">
+    <h3 :class="{ invisible: !showYomigana}">{{ (vocab as any)[currentVocabList][currentWord as any].hiragana }}</h3>
     <!-- <h3 v-show="showYomigana">{{ yomigana }}</h3> -->
-    <h1 v-show="showKanji" class="green">{{ kanji }}</h1>
+    
+    <h1 v-show="showKanji" class="green">{{ (vocab as any)[currentVocabList][currentWord as any].kanji }}</h1>
   </div>
 </template>
 
