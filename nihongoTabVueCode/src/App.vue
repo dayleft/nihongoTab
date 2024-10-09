@@ -1,67 +1,105 @@
-<script setup lang="ts">
+<script setup async lang="ts">
 import VocabWordJapanese from './components/VocabWordJapanese.vue'
 import VocabWordEnglish from './components/VocabWordEnglish.vue'
 import VocabListSelector from './components/VocabListSelector.vue';
 import vocab from './assets/japanese-vocab.json'
 import { ref } from 'vue'
 
-//App State
-const appState = ref({
-  currentVocabList: 'N5',
-  currentWord: 0,
-  setLength: 10,
-  vocab: vocab,
+//Interfaces
+interface StorageData {
+  currentVocabList : string
+  vocabListSet : object
+}
 
-  showYomigana: false,
-  showKanji: true,
-  showEnglish: false,
+//Set initial State
+const currentVocabList = ref("N5")
+var currentWord = 0
+var set = 0
+var setLength = 10
+var randomSetWords = _getRandomSetWords(set,setLength)
 
-  showNextSetButton: false,
-  showEndOfVocabList: false,
-
-  progressBar: 0
+const yomigana = ref({
+  text: (vocab as any)[currentVocabList.value][randomSetWords[currentWord]].hiragana,
+  show: false
+})
+const kanji = ref({
+  text: (vocab as any)[currentVocabList.value][randomSetWords[currentWord]].kanji,
+  show: true
+})
+const english = ref({
+  text: (vocab as any)[currentVocabList.value][randomSetWords[currentWord]].english,
+  show: false
 })
 
-//Vocab list data
-// const vocabListLibrary = ref([
-//   {
-//     vocabListName: "N5",
-//     vocabListIndex: "N5"
-//   },
-//   {
-//     vocabListName: "N4",
-//     vocabListIndex: "N4"
-//   },
-//   {
-//     vocabListName: "N3",
-//     vocabListIndex: "N3"
-//   },
-//   {
-//     vocabListName: "N2",
-//     vocabListIndex: "N2"
-//   },
-//   {
-//     vocabListName: "N1",
-//     vocabListIndex: "N1"
-//   },
-//   {
-//     vocabListName: "Other",
-//     vocabListIndex: "No set"
-//   }
-// ])
+const showNextSetButton = ref(false)
+const showEndOfVocabList = ref(false)
 
-//On click funtions
+// Update initial state based on storage data
+async function setGlobalState() {
+  var storageData  =  await _getStorageData("storageData")
+  currentVocabList.value = storageData.currentVocabList
+  currentWord = 0
+  set = (storageData as any).vocabListSet[storageData.currentVocabList]
+  setLength = 10
+  randomSetWords = _getRandomSetWords(set,setLength)
+
+  yomigana.value.text = (vocab as any)[currentVocabList.value][randomSetWords[currentWord]].hiragana
+  yomigana.value.show = false
+  
+  kanji.value.text = (vocab as any)[currentVocabList.value][randomSetWords[currentWord]].kanji
+  kanji.value.show = true
+
+  english.value.text = (vocab as any)[currentVocabList.value][randomSetWords[currentWord]].english
+  english.value.show = false
+
+  showNextSetButton.value = false
+  showEndOfVocabList.value = false
+}
+
+async function _getStorageData(key : string) {
+  const defaultStorageData : StorageData = {
+    currentVocabList : 'N5',
+    vocabListSet : {
+      "N5" : 0,
+      "N4" : 0,
+      "N3" : 0,
+      "N2" : 0,
+      "N1" : 0
+    }
+  }
+  return new Promise((resolve,reject) => {
+    chrome.storage.sync.get({key : defaultStorageData},resolve);
+  })
+    .then(result => {
+      return (result as any).key;
+    });
+}
+
+// async function getStorageData(key : string) {
+//   var storageData  =  await _getStorageData(key)
+// }
+
+async function setStoragedata(key : string, value : StorageData) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.set({key : value},resolve);
+  });
+}
+
+//Calling the 'main' async function
+setGlobalState();
+
+//On click funtions ===============================
 function clickJapanese() {
-  if (appState.value.showYomigana === false) {
-    appState.value.showYomigana = true
+  if (yomigana.value.show === false) {
+    yomigana.value.show = true
   }
 }
 function clickEnglish() {
-  if (appState.value.showEnglish === false) {
-    appState.value.showEnglish = true
+  if (english.value.show === false) {
+    english.value.show = true
     //increment progress bar
     if (_atEndOfSet() || _atEndOfVocabList()) {
-      appState.value.showNextSetButton = true
+      showNextSetButton.value = true
     }
   } else {
     _getNextWord()
@@ -71,74 +109,109 @@ function clickNextSet() {
   _resetFlashcard()
   if (_atEndOfVocabList()) {
     _hideFlashcard()
-    appState.value.showEndOfVocabList = true
+    showEndOfVocabList.value = true
   } else {
-    appState.value.currentWord = appState.value.currentWord+1
+    _setupNextSet()
   }
 }
-function changeVocabList(vocabList:string) {
-  appState.value.currentVocabList = vocabList
-  appState.value.currentWord = 0
-  //currentVocabList.value = vocabList
+async function changeVocabList(vocabList : string) {
+  // set up the new vocablist
+  currentVocabList.value = vocabList
+  english.value.show = false
+  currentWord = 0
+  _updateWord()
+  // save the change of vocablist
+  var updatedStorageData : StorageData = await _getStorageData("storageData");
+  updatedStorageData.currentVocabList = vocabList
+  setStoragedata("storageData",updatedStorageData);
+}
+
+// Helper Functions =========================================
+async function _setupNextSet() {
+  // set up the set
+  english.value.show = false
+  set = set+1
+  currentWord = 0
+  randomSetWords = _getRandomSetWords(set,setLength)
+  _updateWord()
+  // save the change of set
+  var updatedStorageData : StorageData = await _getStorageData("storageData");
+  (updatedStorageData as any).vocabListSet[currentVocabList.value] = set
+  setStoragedata("storageData",updatedStorageData);
+}
+
+function _getRandomSetWords(set : number,setLength : number) {
+  //Create an array with all numbers
+  let randomSetWords = Array(setLength)
+  for (let i = 0; i < setLength; i++) {
+    randomSetWords[i] = (set*setLength)+i
+  }
+  //Randomize array positions
+  for (let i = 0; i < setLength; i++) {
+    let randomIndex = Math.floor(Math.random()*setLength)
+    let swappedValue = randomSetWords[randomIndex]
+    randomSetWords[randomIndex] = randomSetWords[i]
+    randomSetWords[i] = swappedValue
+  }
+  return randomSetWords
 }
 function _getNextWord() {
   _resetFlashcard()
-  if (_atEndOfVocabList()) { //Go back to the begining of the set when the set length is <setLength
-    appState.value.currentWord = (appState.value.currentWord+1) - ((vocab as any)[appState.value.currentVocabList].length % appState.value.setLength)
-  } else if (_atEndOfSet()) { //Go back to begining of the set
-    appState.value.currentWord = (appState.value.currentWord+1) - appState.value.setLength
+  if (_atEndOfVocabList() || _atEndOfSet()) {
+    currentWord = 0
+    randomSetWords = _getRandomSetWords(set,setLength)
   } else {
-    appState.value.currentWord = appState.value.currentWord+1
+    currentWord = currentWord+1
   }
+  _updateWord()
+}
+function _updateWord() {
+  yomigana.value.text = (vocab as any)[currentVocabList.value][randomSetWords[currentWord]].hiragana
+  kanji.value.text = (vocab as any)[currentVocabList.value][randomSetWords[currentWord]].kanji
+  english.value.text = (vocab as any)[currentVocabList.value][randomSetWords[currentWord]].english
 }
 function _resetFlashcard() {
-  appState.value.showKanji = true
-  appState.value.showYomigana = false
-  appState.value.showEnglish = false
-  appState.value.showNextSetButton = false
+  kanji.value.show = true
+  yomigana.value.show = false
+  english.value.show = false
+  showNextSetButton.value = false
 }
 function _hideFlashcard() {
-  appState.value.showYomigana = false
-  appState.value.showKanji = false
-  appState.value.showEnglish = false
+  yomigana.value.show = false
+  kanji.value.show = false
+  english.value.show = false
 }
 function _atEndOfSet() {
-  return ((appState.value.currentWord+1) % appState.value.setLength) === 0 //|| (appState.value.currentWord+1) === vocab[_vocabList].length
+  return currentWord+1 === setLength
 }
-function _atEndOfVocabList() {
-  return (appState.value.currentWord+1) === (vocab as any)[appState.value.currentVocabList].length
+function _atEndOfVocabList() { //Need to test ****************************************************
+  return (set*setLength+currentWord+1) === (vocab as any)[currentVocabList.value].length
 }
 </script>
 
 <template>
-  <header>
+  <div>
       <VocabListSelector 
-        :currentVocabList="appState.currentVocabList"
+        :currentVocabList="currentVocabList"
         @changeVocabList="changeVocabList"
       />
-    <div class="wrapper">
+  </div>
+  <div class="wrapper">
       <VocabWordJapanese 
-        :currentVocabList="appState.currentVocabList" 
-        :currentWord="appState.currentWord"
-        :vocab="appState.vocab"
-        :showYomigana="appState.showYomigana"
-        :showKanji="appState.showKanji" 
-        @clickJapanese="clickJapanese"
+        :yomigana="yomigana" 
+        :kanji="kanji"
+        @click="clickJapanese()"
       />
-    </div>
-  </header>
+  </div>
       <VocabWordEnglish 
-        :currentVocabList="appState.currentVocabList" 
-        :currentWord="appState.currentWord" 
-        :vocab="appState.vocab"
-        :showEnglish="appState.showEnglish" 
-        @clickEnglish="clickEnglish"
+        :english="english"
+        @click="clickEnglish()"
       />
     <div>
-      <button class="button" v-show="appState.showNextSetButton" @click="clickNextSet()">Next vocab set</button>
+      <button class="button" v-show="showNextSetButton" @click="clickNextSet()">Next vocab set</button>
     </div>
     <div>
-      <h1 v-show="appState.showEndOfVocabList" class="green">Congrats! You completed this vocab list!</h1>
+      <h1 v-show="showEndOfVocabList" class="green">Congrats! You completed this vocab list!</h1>
     </div>
 </template>
 

@@ -1,25 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
+interface Word {
+  text : string
+  show : boolean
+}
 const props = defineProps<{
-  currentVocabList: string,
-  currentWord: Number,
-  vocab: object,
-  showYomigana: Boolean,
-  showKanji: Boolean
+  yomigana: Word,
+  kanji: Word
 }>()
-
-// let vocabWord = vocab[props.vocabList][props.currentWord]
-//const kanji = ref((vocab as any)[props.currentVocabList][props.currentWord as any].kanji)
-//const yomigana = ref((vocab as any)[props.currentVocabList][props.currentWord as any].hiragana)
 </script>
 
 <template>
-  <div class="word" @click="$emit('clickJapanese')">
-    <h3 :class="{ invisible: !showYomigana}">{{ (vocab as any)[currentVocabList][currentWord as any].hiragana }}</h3>
+  <div class="word">
+    <h3 :class="{ invisible: !yomigana.show}">{{ yomigana.text }}</h3>
     <!-- <h3 v-show="showYomigana">{{ yomigana }}</h3> -->
     
-    <h1 v-show="showKanji" class="green">{{ (vocab as any)[currentVocabList][currentWord as any].kanji }}</h1>
+    <h1 v-show="kanji.show" class="green">{{ kanji.text }}</h1>
   </div>
 </template>
 
