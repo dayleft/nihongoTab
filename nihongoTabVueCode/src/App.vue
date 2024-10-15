@@ -33,6 +33,7 @@ const english = ref({
 
 const showNextSetButton = ref(false)
 const showEndOfVocabList = ref(false)
+var showComponents = false;
 
 // Update initial state based on storage data
 async function setGlobalState() {
@@ -54,6 +55,7 @@ async function setGlobalState() {
 
   showNextSetButton.value = false
   showEndOfVocabList.value = false
+  showComponents = true
 }
 
 async function _getStorageData(key : string) {
@@ -194,6 +196,7 @@ function _atEndOfVocabList() { //Need to test **********************************
       <VocabListSelector 
         :currentVocabList="currentVocabList"
         @changeVocabList="changeVocabList"
+        v-show="showComponents"
       />
   </div>
   <div class="wrapper">
@@ -201,11 +204,13 @@ function _atEndOfVocabList() { //Need to test **********************************
         :yomigana="yomigana" 
         :kanji="kanji"
         @click="clickJapanese()"
+        v-show="showComponents"
       />
   </div>
       <VocabWordEnglish 
         :english="english"
         @click="clickEnglish()"
+        v-show="showComponents"
       />
     <div>
       <button class="button" v-show="showNextSetButton" @click="clickNextSet()">Next vocab set</button>
