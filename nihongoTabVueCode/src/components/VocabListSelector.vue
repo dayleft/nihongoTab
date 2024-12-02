@@ -12,12 +12,11 @@ const props = defineProps<{
             </button>
             <div class="dropdown-content">
             <a href="#" @click="$emit('changeVocabList','N5')">N5 vocab</a>
-            <button>Refresh</button>
             <a href="#" @click="$emit('changeVocabList','N4')">N4 vocab</a>
             <a href="#" @click="$emit('changeVocabList','N3')">N3 vocab</a>
             <a href="#" @click="$emit('changeVocabList','N2')">N2 vocab</a>
             <a href="#" @click="$emit('changeVocabList','N1')">N1 vocab</a>
-            <a href="#" @click="$emit('changeVocabList','TerraceHouse')">TerraceHouse vocab</a>
+            <a href="#" @click="$emit('changeVocabList','TerraceHouse')">TerraceHouse vocab [Testing]</a>
             </div>
         </div> 
     </div>

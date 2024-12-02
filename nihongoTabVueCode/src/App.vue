@@ -122,17 +122,37 @@ function clickNextSet() {
 
 async function changeVocabList(vocabList : string) {
   // reset word components
-  showWordComponents = true
-  showEndOfVocabList.value = false
   _resetFlashcard()
   // set up the new vocablist
   currentVocabList.value = vocabList
-  english.value.show = false
   currentWord = 0
+  var updatedStorageData : StorageData = await _getStorageData("storageData");
+  set = (updatedStorageData as any).vocabListSet[vocabList]
+  if (_atFinalSet()) {
+    randomSetWords = _getRandomSetWords(set,_getFinalSetLength())
+  } else {
+    randomSetWords = _getRandomSetWords(set,setLength)
+  }
   _updateWord()
   // save the change of vocablist
-  var updatedStorageData : StorageData = await _getStorageData("storageData");
   updatedStorageData.currentVocabList = vocabList
+  setStoragedata("storageData",updatedStorageData);
+}
+
+async function resetVocabList() {
+  // reset flashcard and set
+  _resetFlashcard()
+  currentWord = 0
+  set = 0
+  if (_atFinalSet()) {
+    randomSetWords = _getRandomSetWords(set,_getFinalSetLength())
+  } else {
+    randomSetWords = _getRandomSetWords(set,setLength)
+  }
+  _updateWord()
+  // save the change
+  var updatedStorageData : StorageData = await _getStorageData("storageData");
+  (updatedStorageData as any).vocabListSet[currentVocabList.value] = 0
   setStoragedata("storageData",updatedStorageData);
 }
 
@@ -141,6 +161,7 @@ async function _setupNextSet() {
   // set up the set
   english.value.show = false
   set = set+1
+  console.log("current set: "+set)
   currentWord = 0
   if (_atFinalSet()) {
     randomSetWords = _getRandomSetWords(set,_getFinalSetLength())
@@ -154,19 +175,21 @@ async function _setupNextSet() {
   setStoragedata("storageData",updatedStorageData);
 }
 
-function _getRandomSetWords(set : number,setLength : number) {
+function _getRandomSetWords(set : number,setLengthLocal : number) {
+  console.log("getRandomSet inputs, set: "+set+" setlength: "+setLengthLocal)
   //Create an array with all numbers
-  let randomSetWords = Array(setLength)
-  for (let i = 0; i < setLength; i++) {
+  let randomSetWords = Array(setLengthLocal)
+  for (let i = 0; i < setLengthLocal; i++) {
     randomSetWords[i] = (set*setLength)+i
   }
   //Randomize array positions
-  for (let i = 0; i < setLength; i++) {
-    let randomIndex = Math.floor(Math.random()*setLength)
+  for (let i = 0; i < setLengthLocal; i++) {
+    let randomIndex = Math.floor(Math.random()*setLengthLocal)
     let swappedValue = randomSetWords[randomIndex]
     randomSetWords[randomIndex] = randomSetWords[i]
     randomSetWords[i] = swappedValue
   }
+  console.log("randomSet: "+randomSetWords)
   return randomSetWords
 }
 
@@ -198,6 +221,8 @@ function _resetFlashcard() {
   yomigana.value.show = false
   english.value.show = false
   showNextSetButton.value = false
+  showWordComponents = true
+  showEndOfVocabList.value = false
 }
 function _hideFlashcard() {
   showWordComponents = false
@@ -205,7 +230,7 @@ function _hideFlashcard() {
 function _atEndOfSet() {
   return currentWord+1 === setLength
 }
-function _atEndOfVocabList() { //Need to test ****************************************************
+function _atEndOfVocabList() {
   return (set*setLength+currentWord+1) === (vocab as any)[currentVocabList.value].length
 }
 </script>
@@ -232,6 +257,9 @@ function _atEndOfVocabList() { //Need to test **********************************
   <div>
     <h1 v-show="showEndOfVocabList" class="endOfVocabList">Congrats! You completed this vocab list!</h1>
   </div>
+  <div> 
+    <button class="resetVocabListButton" v-show="showEndOfVocabList" @click="resetVocabList()">Reset vocab list</button>
+  </div>
 </template>
 
 <style scoped>
@@ -250,6 +278,20 @@ header {
   display: inline-block;
   font-size: 22px;
   margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.resetVocabListButton {
+  background-color: hsla(160, 100%, 37%, 1);
+  border: none;
+  color: #181818;
+  padding: 15px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 22px;
+  margin: 4rem 2rem;
   cursor: pointer;
   border-radius: 8px;
 }
