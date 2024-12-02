@@ -33,7 +33,7 @@ const english = ref({
 
 const showNextSetButton = ref(false)
 const showEndOfVocabList = ref(false)
-var showComponents = true
+var showWordComponents = true
 
 // Update initial state based on storage data
 async function setGlobalState() {
@@ -55,8 +55,8 @@ async function setGlobalState() {
 
   showNextSetButton.value = false
   showEndOfVocabList.value = false
-  showComponents = true
-  console.log("end of async call: "+showComponents)
+  showWordComponents = true
+  console.log("end of async call: "+showWordComponents)
 }
 
 async function _getStorageData(key : string) {
@@ -86,7 +86,7 @@ async function setStoragedata(key : string, value : StorageData) {
 
 //Calling the 'main' async function
 setGlobalState();
-console.log("after set global state: "+showComponents)
+console.log("after set global state: "+showWordComponents)
 
 //On click funtions ===============================
 function clickJapanese() {
@@ -94,17 +94,22 @@ function clickJapanese() {
     yomigana.value.show = true
   }
 }
+
 function clickEnglish() {
   if (english.value.show === false) {
     english.value.show = true
-    //increment progress bar
-    if (_atEndOfSet() || _atEndOfVocabList()) {
+    if (_atEndOfSet() && !_atEndOfVocabList()) {
       showNextSetButton.value = true
     }
-  } else {
+  } else if (english.value.show === true && _atEndOfVocabList()) {
+    _hideFlashcard()
+    showEndOfVocabList.value = true
+  }
+  else {
     _getNextWord()
   }
 }
+
 function clickNextSet() {
   _resetFlashcard()
   if (_atEndOfVocabList()) {
@@ -114,7 +119,12 @@ function clickNextSet() {
     _setupNextSet()
   }
 }
+
 async function changeVocabList(vocabList : string) {
+  // reset word components
+  showWordComponents = true
+  showEndOfVocabList.value = false
+  _resetFlashcard()
   // set up the new vocablist
   currentVocabList.value = vocabList
   english.value.show = false
@@ -132,7 +142,11 @@ async function _setupNextSet() {
   english.value.show = false
   set = set+1
   currentWord = 0
-  randomSetWords = _getRandomSetWords(set,setLength)
+  if (_atFinalSet()) {
+    randomSetWords = _getRandomSetWords(set,_getFinalSetLength())
+  } else {
+    randomSetWords = _getRandomSetWords(set,setLength)
+  }
   _updateWord()
   // save the change of set
   var updatedStorageData : StorageData = await _getStorageData("storageData");
@@ -155,9 +169,18 @@ function _getRandomSetWords(set : number,setLength : number) {
   }
   return randomSetWords
 }
+
+function _atFinalSet() {
+  return ((set+1)*setLength) >= (vocab as any)[currentVocabList.value].length
+}
+
+function _getFinalSetLength() {
+  return (vocab as any)[currentVocabList.value].length - (set*setLength)
+}
+
 function _getNextWord() {
   _resetFlashcard()
-  if (_atEndOfVocabList() || _atEndOfSet()) {
+  if (_atEndOfSet() && !_atEndOfVocabList()) {
     currentWord = 0
     randomSetWords = _getRandomSetWords(set,setLength)
   } else {
@@ -177,9 +200,7 @@ function _resetFlashcard() {
   showNextSetButton.value = false
 }
 function _hideFlashcard() {
-  yomigana.value.show = false
-  kanji.value.show = false
-  english.value.show = false
+  showWordComponents = false
 }
 function _atEndOfSet() {
   return currentWord+1 === setLength
@@ -193,24 +214,23 @@ function _atEndOfVocabList() { //Need to test **********************************
   <VocabListSelector 
     :currentVocabList="currentVocabList"
     @changeVocabList="changeVocabList"
-    v-show="showComponents"
   />
   <VocabWordJapanese 
     :yomigana="yomigana" 
     :kanji="kanji"
     @click="clickJapanese()"
-    v-show="showComponents"
+    v-show="showWordComponents"
   />
   <VocabWordEnglish 
     :english="english"
     @click="clickEnglish()"
-    v-show="showComponents"
+    v-show="showWordComponents"
   />
   <div>
     <button class="nextSetButton" v-show="showNextSetButton" @click="clickNextSet()">Next vocab set</button>
   </div>
   <div>
-    <h1 v-show="showEndOfVocabList" class="green">Congrats! You completed this vocab list!</h1>
+    <h1 v-show="showEndOfVocabList" class="endOfVocabList">Congrats! You completed this vocab list!</h1>
   </div>
 </template>
 
@@ -232,6 +252,17 @@ header {
   margin: 4px 2px;
   cursor: pointer;
   border-radius: 8px;
+}
+
+.endOfVocabList {
+  font-weight: 500;
+  font-size: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: hsla(160, 100%, 37%, 1);
+  padding-top: 18rem;
 }
 
 @media (min-width: 1024px) {
