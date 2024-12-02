@@ -1,2 +1,0 @@
-run `npm run build` to build the dist folder
-add 4 icons and the manifest.json the folder before uploading to chrome

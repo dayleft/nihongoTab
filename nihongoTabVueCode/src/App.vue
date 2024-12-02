@@ -33,7 +33,7 @@ const english = ref({
 
 const showNextSetButton = ref(false)
 const showEndOfVocabList = ref(false)
-var showComponents = false;
+var showComponents = true
 
 // Update initial state based on storage data
 async function setGlobalState() {
@@ -56,6 +56,7 @@ async function setGlobalState() {
   showNextSetButton.value = false
   showEndOfVocabList.value = false
   showComponents = true
+  console.log("end of async call: "+showComponents)
 }
 
 async function _getStorageData(key : string) {
@@ -77,10 +78,6 @@ async function _getStorageData(key : string) {
     });
 }
 
-// async function getStorageData(key : string) {
-//   var storageData  =  await _getStorageData(key)
-// }
-
 async function setStoragedata(key : string, value : StorageData) {
   return new Promise((resolve, reject) => {
     chrome.storage.sync.set({key : value},resolve);
@@ -89,6 +86,7 @@ async function setStoragedata(key : string, value : StorageData) {
 
 //Calling the 'main' async function
 setGlobalState();
+console.log("after set global state: "+showComponents)
 
 //On click funtions ===============================
 function clickJapanese() {
@@ -192,32 +190,28 @@ function _atEndOfVocabList() { //Need to test **********************************
 </script>
 
 <template>
+  <VocabListSelector 
+    :currentVocabList="currentVocabList"
+    @changeVocabList="changeVocabList"
+    v-show="showComponents"
+  />
+  <VocabWordJapanese 
+    :yomigana="yomigana" 
+    :kanji="kanji"
+    @click="clickJapanese()"
+    v-show="showComponents"
+  />
+  <VocabWordEnglish 
+    :english="english"
+    @click="clickEnglish()"
+    v-show="showComponents"
+  />
   <div>
-      <VocabListSelector 
-        :currentVocabList="currentVocabList"
-        @changeVocabList="changeVocabList"
-        v-show="showComponents"
-      />
+    <button class="nextSetButton" v-show="showNextSetButton" @click="clickNextSet()">Next vocab set</button>
   </div>
-  <div class="wrapper">
-      <VocabWordJapanese 
-        :yomigana="yomigana" 
-        :kanji="kanji"
-        @click="clickJapanese()"
-        v-show="showComponents"
-      />
+  <div>
+    <h1 v-show="showEndOfVocabList" class="green">Congrats! You completed this vocab list!</h1>
   </div>
-      <VocabWordEnglish 
-        :english="english"
-        @click="clickEnglish()"
-        v-show="showComponents"
-      />
-    <div>
-      <button class="button" v-show="showNextSetButton" @click="clickNextSet()">Next vocab set</button>
-    </div>
-    <div>
-      <h1 v-show="showEndOfVocabList" class="green">Congrats! You completed this vocab list!</h1>
-    </div>
 </template>
 
 <style scoped>
@@ -226,7 +220,7 @@ header {
   max-height: 100vh;
 }
 
-.button {
+.nextSetButton {
   background-color: hsla(160, 100%, 37%, 1);
   border: none;
   color: #181818;
@@ -240,31 +234,6 @@ header {
   border-radius: 8px;
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
 @media (min-width: 1024px) {
   header {
     display: flex;
@@ -272,23 +241,10 @@ nav a:first-of-type {
     padding-right: calc(var(--section-gap) / 2);
   }
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
   header .wrapper {
     display: flex;
     place-items: flex-start;
     flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
   }
 }
 </style>
