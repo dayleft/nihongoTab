@@ -41,8 +41,8 @@ const props = defineProps<{
 }
 
 .wordbox {
-  padding-top: 8rem;
-  padding-bottom: 3rem;
+  padding-top: 6rem;
+  padding-bottom: 2.5rem;
   width: 80vw;
 }
 </style>

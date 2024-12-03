@@ -16,7 +16,7 @@ const props = defineProps<{
             <a href="#" @click="$emit('changeVocabList','N3')">N3 vocab</a>
             <a href="#" @click="$emit('changeVocabList','N2')">N2 vocab</a>
             <a href="#" @click="$emit('changeVocabList','N1')">N1 vocab</a>
-            <a href="#" @click="$emit('changeVocabList','TerraceHouse')">TerraceHouse vocab [Testing]</a>
+            <!-- <a href="#" @click="$emit('changeVocabList','TerraceHouse')">TerraceHouse vocab [Testing]</a> -->
             </div>
         </div> 
     </div>

@@ -56,7 +56,7 @@ async function setGlobalState() {
   showNextSetButton.value = false
   showEndOfVocabList.value = false
   showWordComponents = true
-  console.log("end of async call: "+showWordComponents)
+  // console.log("end of async call: "+showWordComponents)
 }
 
 async function _getStorageData(key : string) {
@@ -67,7 +67,8 @@ async function _getStorageData(key : string) {
       "N4" : 0,
       "N3" : 0,
       "N2" : 0,
-      "N1" : 0
+      "N1" : 0,
+      "TerraceHouse" : 0
     }
   }
   return new Promise((resolve,reject) => {
@@ -86,7 +87,7 @@ async function setStoragedata(key : string, value : StorageData) {
 
 //Calling the 'main' async function
 setGlobalState();
-console.log("after set global state: "+showWordComponents)
+// console.log("after set global state: "+showWordComponents)
 
 //On click funtions ===============================
 function clickJapanese() {
@@ -161,7 +162,7 @@ async function _setupNextSet() {
   // set up the set
   english.value.show = false
   set = set+1
-  console.log("current set: "+set)
+  // console.log("current set: "+set)
   currentWord = 0
   if (_atFinalSet()) {
     randomSetWords = _getRandomSetWords(set,_getFinalSetLength())
@@ -176,7 +177,7 @@ async function _setupNextSet() {
 }
 
 function _getRandomSetWords(set : number,setLengthLocal : number) {
-  console.log("getRandomSet inputs, set: "+set+" setlength: "+setLengthLocal)
+  // console.log("getRandomSet inputs, set: "+set+" setlength: "+setLengthLocal)
   //Create an array with all numbers
   let randomSetWords = Array(setLengthLocal)
   for (let i = 0; i < setLengthLocal; i++) {
@@ -189,7 +190,7 @@ function _getRandomSetWords(set : number,setLengthLocal : number) {
     randomSetWords[randomIndex] = randomSetWords[i]
     randomSetWords[i] = swappedValue
   }
-  console.log("randomSet: "+randomSetWords)
+  // console.log("randomSet: "+randomSetWords)
   return randomSetWords
 }
 
